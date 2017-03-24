@@ -1,0 +1,5 @@
+.h(text="Description").p(image="image.jpg")
+.h(size=1,text="Title").l(text="click me",link="https://www.google.ca")
+.h(text="Description2").t(text="This is the text...").d()
+.b(name="Enter",link="https://www.google.ca").r(action=" ",name="colour",value="red",value="green",value="blue")
+.i(action=" ",text="Phone Number: ",name="number",value="123-456-7890",text="Address: ",name="address",value="123 Apple Blvd")

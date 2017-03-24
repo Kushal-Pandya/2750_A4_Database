@@ -1,0 +1,3 @@
+.h(text="Remove Author").d()
+.i(action="removeAuthorDone.php",text="Stream List: ",name="streams",value="")
+.b(name="Main Menu",link="indexDone.php").t(text="<br>")

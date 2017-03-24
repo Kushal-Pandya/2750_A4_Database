@@ -1,0 +1,6 @@
+.h(text="Select an option",size=2).d().t(text="<br>")
+.b(name="Change Author",link="index.php")
+.b(name="Add Author",link="addauthor.php")
+.b(name="Remove Author",link="removeAuthor.php")
+.b(name="Post",link="post.php")
+.b(name="View",link="selectStream.php")

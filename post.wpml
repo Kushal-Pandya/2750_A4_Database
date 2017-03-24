@@ -1,0 +1,4 @@
+.h(text="Post").d()
+.i(action="postDone.php",text="Stream: ",name="stream",value="")
+Text:<br><textarea name="text" form="usrform"></textarea><br>
+.t(text="<br>").b(name="Main Menu",link="indexDone.php")
