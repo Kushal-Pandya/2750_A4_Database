@@ -8,61 +8,54 @@
 #define PASSWORD  "0888884"
 #define DATABASE  "pandyak"
 
-void initDb() {
-	MYSQL mysql;
-	MYSQL_RES *res;
-	MYSQL_ROW row;
-	MYSQL_FIELD *field;
-	char query[MAX_QUERY];
 
-	printf("connecting...\n");
-	
-	mysql_init(&mysql);
-	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
-	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
-		DATABASE, 0, NULL, 0)) {
-	   printf("Could not connect to host.%s",mysql_error(&mysql));
-	}			
-	printf("Connected\n");
+void error(char *msg, MYSQL *mysql) {
+	printf("%s\n%s\n",msg,mysql_error(mysql));
+}
+
+void clrstr(char *buf) {
+	buf[0] = '\0';
 }
 
 void performAdd(char *token, char *name) {
 
 	char *temp = malloc(sizeof(char)*100);
 	char *filename = malloc(sizeof(char)*100);		
-	int size;
 
-	strcpy(temp, "messages/");
-	strcat(temp, token);
+	MYSQL mysql;
+	char query[MAX_QUERY];
+		
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host.%s", mysql_error(&mysql));
+	}			
+
+	strcpy(temp, token);
 	removeCharFromString(temp, '\n');
 	strcpy(filename, strcat(temp, "StreamUsers"));
-	FILE *fptr = fopen(filename, "a+");
 
-	fseek(fptr, 0, SEEK_END);
-	size = ftell(fptr);
-	fseek(fptr, 0, SEEK_SET);
+	clrstr(query);
+	clrstr(temp);
+	sprintf(query, "create table %s (", filename);
+	strcat(query, "authorName char(30),");
+	strcat(query, "postRead int,");
+	strcat(query, "primary key(authorName) )");
 	
-	/*Read file to check if user exists*/
-	
-	if (size == 0) {
-		fprintf(fptr, "%s, 0\n", name);
+	if(mysql_query(&mysql, query)) {
+	  error("Could not create table!",&mysql);
 	}
-	else {
-		char buffer[255];	
-		int duplicate = 0;			
+	clrstr(query);
 
-		while (fgets(buffer, 255, fptr) != NULL) {
-
-			if (strstr(buffer, name) != NULL)
-					duplicate = 1;
-		}				
-		if (duplicate)
-			printf("ERROR '%s' already exists in %s\n", name, filename);
-		else
-			fprintf(fptr, "%s, 0\n", name);
+	char records[100];
+	sprintf(records, "insert into %s (authorName,postRead) values ('%s','0')", filename, name);
+	
+	if(mysql_query(&mysql, records)) {
+		printf("Failure to insert: %s\n",records);
+		error("Could not insert record",&mysql);
 	}
 
-	fclose(fptr);
 	free(temp);
 	free(filename);
 }
@@ -71,31 +64,28 @@ void performRemove(char *token, char *name) {
 
 	char *temp = malloc(sizeof(char)*100);
 	char *filename = malloc(sizeof(char)*100);		
-	int size;
 
-	strcpy(temp, "messages/");
-	strcat(temp, token);
+	MYSQL mysql;
+	char query[MAX_QUERY];
+		
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host.%s", mysql_error(&mysql));
+	}	
+
+	strcpy(temp, token);
 	removeCharFromString(temp, '\n');
 	strcpy(filename, strcat(temp, "StreamUsers"));
-	FILE *fptr = fopen(filename, "a+");
+	clrstr(query);
 
-	fseek(fptr, 0, SEEK_END);
-	size = ftell(fptr);
-	fseek(fptr, 0, SEEK_SET);
-
-	if (size != 0) {
-		FILE *outFile = fopen("messages/temp.txt", "w+");
-		char buffer[255];	
-
-		while (fgets(buffer, 255, fptr) != NULL) {
-
-			if (strstr(buffer, name) == NULL)
-				fprintf(outFile, "%s", buffer);
-		}
-		remove(filename);	
-		fclose(fptr);
-		fclose(outFile);
-		rename("messages/temp.txt", filename); 
+	char records[100];
+	sprintf(records, "delete from %s where %s.authorName='%s'", filename, filename, name);
+	
+	if(mysql_query(&mysql, records)) {
+		printf("Failure to remove: %s\n",records);
+		error("Could not remove record",&mysql);
 	}
 
 	free(temp);
@@ -143,72 +133,84 @@ void removeUser(char *username, char *list) {
 
 void updateStream(struct userPost *st) {
 
+	char *temp = malloc(sizeof(char)*100);
 	char *streamFilename = malloc(sizeof(char)*100);
-	char *streamDataFilename = malloc(sizeof(char)*100);
 	char *streamUsersFilename = malloc(sizeof(char)*100);
-	int size;
-	int usersSize;
-	int hasPermission = 0;
 
-	strcpy(streamFilename, "messages/");
-	strcat(streamFilename, st->streamname);
+	MYSQL mysql;
+	char query[MAX_QUERY];
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+	int hasPermission = 0;
+	int i = 0;
+
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host.%s", mysql_error(&mysql));
+	}			
+
+	strcpy(streamFilename, st->streamname);
 	removeCharFromString(streamFilename, '\n');
 	strcat(streamFilename, "Stream");
 
-	strcpy(streamDataFilename, "messages/");
-	strcat(streamDataFilename, st->streamname);
-	removeCharFromString(streamDataFilename, '\n');
-	strcat(streamDataFilename, "StreamData");
-
-	strcpy(streamUsersFilename, "messages/");
-	strcat(streamUsersFilename, st->streamname);
+	strcpy(streamUsersFilename, st->streamname);
 	removeCharFromString(streamUsersFilename, '\n');
 	strcat(streamUsersFilename, "StreamUsers");
 
-	FILE *usersfile = fopen(streamUsersFilename, "a+");
-	fseek(usersfile, 0, SEEK_END);
-	usersSize = ftell(usersfile);
-	fseek(usersfile, 0, SEEK_SET);
+	/*Checking to see if user has permission*/
+	removeCharFromString(st->username, '\n');
+	clrstr(query);
+	sprintf(query, "select * from %s where %s.authorName='%s'", streamUsersFilename,
+		streamUsersFilename, st->username);
 
-	if (usersSize != 0) {
-		char buffer[255];
-		char temp[255];
-		char *token;
-		char *name = calloc(strlen(st->username)+1, sizeof(char));
-		strcpy(name, st->username);
-		removeCharFromString(name, '\n');	
+	if(mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
 
-		while (fgets(buffer, 255, usersfile) != NULL) {
-			strcpy(temp, buffer);
-			token = strtok(temp, ",");
-			if (strcmp(token, name) == 0)
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+	
+	while ((row = mysql_fetch_row(res))) {
+		for (i=0; i < mysql_num_fields(res); i++){
+			if (row == NULL)
+				hasPermission = 0;
+			else
 				hasPermission = 1;
 		}
-		free(name);
 	}
-	fclose(usersfile);
-	
-	if (hasPermission == 1) {
-		FILE *streamfile = fopen(streamFilename, "a+");
-		fprintf(streamfile, "Sender: %s\n", st->username);
-		fprintf(streamfile, "Date: %s\n", st->date);
-		fprintf(streamfile, "Text: %s", st->text);
 
-		fseek(streamfile, 0, SEEK_END);
-		size = ftell(streamfile);
-		fseek(streamfile, 0, SEEK_SET);
+	if (hasPermission) {
+		/*Creating stream table name*/
+		clrstr(query);
+		clrstr(temp);
+		sprintf(temp, "create table %s (id int not null auto_increment,", streamFilename);
+		strcat(query, temp);
+		strcat(query, "authorName char(30),");
+		strcat(query, "date datetime NOT NULL,");
+		strcat(query, "text varchar(255),");
+		strcat(query, "primary key(id) )");
 
-		FILE *datafile = fopen(streamDataFilename, "a+");
-		fprintf(datafile, "%d\n", size);
+		if(mysql_query(&mysql, query)) {
+		  error("Could not create table!",&mysql);
+		}
+		clrstr(query);
+		clrstr(temp);
 
-		fclose(streamfile);
-		fclose(datafile);
+		char records[100];
+		sprintf(records, "insert into %s (authorName,date,text) values ('%s',NOW(),'%s')", streamFilename, 
+			st->username, st->text);
+		
+		if(mysql_query(&mysql, records)) {
+			printf("Failure to insert: %s\n",records);
+			error("Could not insert record",&mysql);
+		}
 	}
-	else
-		printf("\nAuthor does NOT have permission.. Aborting\n");
 
+	free(temp);
 	free(streamFilename);
-	free(streamDataFilename);
 	free(streamUsersFilename);
 }
 
