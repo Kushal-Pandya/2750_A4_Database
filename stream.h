@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <mysql/mysql.h>
 
 struct userPost {
 	char *username;
@@ -12,6 +12,7 @@ struct userPost {
 	char *text;
 };
 
+void initDb();
 int removeCharFromString(char * string, char c);
 void updateStream(struct userPost *st); 
 void addUser(char *username, char *list);

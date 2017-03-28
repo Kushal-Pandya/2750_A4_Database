@@ -1,6 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -ansi -g
+CFLAGS = -Wall -ansi -g 
 LISTS_FILES = var.c func.c class.c list.c
+SQL = -lmysqlclient -L/usr/lib/x86_64-linux-gnu/
 
 
 all: A1 A2 A3 applyPerm A4
@@ -22,13 +23,13 @@ makePost:
 A2: addauthor post
 
 addauthor: addauthor.o
-	$(CC) $(CFLAGS) addauthor.o -o addauthor -L. -lstream
+	$(CC) $(CFLAGS) addauthor.o -o addauthor -L. -lstream $(SQL)
 
 addauthor.o: addauthor.c libstream.a
 	$(CC) $(CFLAGS) -c addauthor.c -o addauthor.o
 
 post: post.o
-	$(CC) $(CFLAGS) post.o -o post -L. -lstream
+	$(CC) $(CFLAGS) post.o -o post -L. -lstream  $(SQL)
 
 post.o: post.c libstream.a 
 	$(CC) $(CFLAGS) -c post.c -o post.o	

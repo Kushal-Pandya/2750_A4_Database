@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
 	int i;
 	int removal = 0;
 
-
 	if (argc < 3) {
 		printf("Not correct arguments\n");
 		exit(0);

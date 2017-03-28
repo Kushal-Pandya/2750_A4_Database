@@ -9,6 +9,7 @@ POST PROGRAM
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <mysql/mysql.h>
 #include "stream.h"
 
 struct PostEntry {

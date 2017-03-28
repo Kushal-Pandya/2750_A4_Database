@@ -1,5 +1,30 @@
 
 #include "stream.h"
+#include <mysql/mysql.h>
+
+#define MAX_QUERY 512
+#define HOSTNAME  "dursley.socs.uoguelph.ca"
+#define USERNAME  "pandyak"
+#define PASSWORD  "0888884"
+#define DATABASE  "pandyak"
+
+void initDb() {
+	MYSQL mysql;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+	MYSQL_FIELD *field;
+	char query[MAX_QUERY];
+
+	printf("connecting...\n");
+	
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host.%s",mysql_error(&mysql));
+	}			
+	printf("Connected\n");
+}
 
 void performAdd(char *token, char *name) {
 
