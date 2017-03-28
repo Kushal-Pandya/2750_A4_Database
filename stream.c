@@ -175,9 +175,7 @@ void updateStream(struct userPost *st) {
 	
 	while ((row = mysql_fetch_row(res))) {
 		for (i=0; i < mysql_num_fields(res); i++){
-			if (row == NULL)
-				hasPermission = 0;
-			else
+			if (row != NULL)
 				hasPermission = 1;
 		}
 	}
@@ -191,7 +189,10 @@ void updateStream(struct userPost *st) {
 		strcat(query, "authorName char(30),");
 		strcat(query, "date datetime NOT NULL,");
 		strcat(query, "text varchar(255),");
-		strcat(query, "primary key(id) )");
+		strcat(query, "primary key(id), ");
+		clrstr(temp);
+		sprintf(temp, "foreign key(authorName) references %s(authorName) )", streamUsersFilename);
+		strcat(query, temp);
 
 		if(mysql_query(&mysql, query)) {
 		  error("Could not create table!",&mysql);
@@ -208,6 +209,8 @@ void updateStream(struct userPost *st) {
 			error("Could not insert record",&mysql);
 		}
 	}
+	else
+		printf("User doesnt have permission\n");
 
 	free(temp);
 	free(streamFilename);
