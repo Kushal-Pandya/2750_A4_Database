@@ -50,7 +50,7 @@ applyPerm:
 
 
 A4: db.o
-	$(CC) $(CFLAGS) db.o -o db
+	$(CC) $(CFLAGS) db.o -o db $(SQL)
 
 db.o: db.c
 	$(CC) $(CFLAGS) -c db.c
