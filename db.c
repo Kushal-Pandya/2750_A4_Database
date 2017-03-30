@@ -140,6 +140,7 @@ int main(int argc, char *argv[]) {
 					check++;
 				}
 			}
+			mysql_free_result(res);
 			strcat(query, " order by date");
 
 			if(mysql_query(&mysql, query)){
@@ -157,6 +158,7 @@ int main(int argc, char *argv[]) {
 				printf("\n");
 			}
 			printf("\n");
+			mysql_free_result(res);
 		}
 		else if (strcmp(argv[i], "users") == 0) {
 			clrstr(query);
@@ -185,6 +187,8 @@ int main(int argc, char *argv[]) {
 					check++;
 				}
 			}
+
+			mysql_free_result(res);
 			strcat(query, " order by authorName");
 
 			if(mysql_query(&mysql, query)){
@@ -201,6 +205,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			printf("\n");
+			mysql_free_result(res);
 		}
 		else if (strcmp(argv[i], "streams") == 0) {
 			clrstr(query);
@@ -220,6 +225,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			printf("\n");
+			mysql_free_result(res);
 		}
 		else {
 			printf("Unrecognized Flag, -help for usage\n");
@@ -228,5 +234,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	free(temp);
+
+	mysql_close(&mysql);
+	mysql_library_end();
+
 	return 0;
 }

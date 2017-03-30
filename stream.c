@@ -58,6 +58,9 @@ void performAdd(char *token, char *name) {
 
 	free(temp);
 	free(filename);
+
+	mysql_close(&mysql);
+	mysql_library_end();
 }
 
 void performRemove(char *token, char *name) {
@@ -90,6 +93,9 @@ void performRemove(char *token, char *name) {
 
 	free(temp);
 	free(filename);
+
+	mysql_close(&mysql);
+	mysql_library_end();
 }
 
 
@@ -179,6 +185,7 @@ void updateStream(struct userPost *st) {
 				hasPermission = 1;
 		}
 	}
+	mysql_free_result(res);
 
 	if (hasPermission) {
 		/*Creating stream table name*/
@@ -215,6 +222,9 @@ void updateStream(struct userPost *st) {
 	free(temp);
 	free(streamFilename);
 	free(streamUsersFilename);
+
+	mysql_close(&mysql);
+	mysql_library_end();
 }
 
 int getIndexOfChar(char * string, char c) {
