@@ -1,5 +1,5 @@
 .h(text="Viewer").d()
-.b(name="Page Up",link="viewNext.php").b(name="Page Down",link="viewNext.php")
+.b(name="Previous Post",link="viewNext.php").b(name="Next Post",link="viewNext.php")
 .b(name="Sort Stream By Name",link="viewNext.php").b(name="Mark All Read",link="viewNext.php")
 .b(name="Check for New Posts",link="viewNext.php").b(name="Select New Stream",link="selectStream.php")
 .b(name="Main Menu",link="indexDone.php").t(text="<br>")

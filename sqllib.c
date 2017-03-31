@@ -11,6 +11,11 @@
 
 
 void connect(char *user);
+int printPost(char *stream, char *user);
+void markAllRead(char *stream, char *user);
+void previousPost(char *stream, char *user, int postRead);
+int nextPost(char *stream, char *user, int postRead);
+void sortByName(char *stream);
 
 
 void error(char *msg, MYSQL *mysql) {
@@ -38,8 +43,6 @@ void connect(char *user) {
 	int i;
 	char query[MAX_QUERY];
 	char *temp = malloc(sizeof(char)*100);
-
-	printf("connecting...\n");
 	
 	mysql_init(&mysql);
 	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
@@ -47,7 +50,6 @@ void connect(char *user) {
 		DATABASE, 0, NULL, 0)) {
 	   printf("Could not connect to host. %s", mysql_error(&mysql));
 	}			
-	printf("Connected\n");
 
 	strcpy(query, "show tables like '%%StreamUsers'");
 	if(mysql_query(&mysql, query)){
@@ -84,10 +86,302 @@ void connect(char *user) {
 	}
 
 	mysql_free_result(res);
-	mysql_free_result(res2);
 
 	mysql_close(&mysql);
 	mysql_library_end();
 
 	free(temp);
+}
+
+int printPost(char *stream, char *user) {
+	MYSQL mysql;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+	int i;
+	int id;
+	int maxid;
+	char query[MAX_QUERY];
+	
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host. %s", mysql_error(&mysql));
+	}	
+
+	sprintf(query, "select id from %sStream", stream);
+	if (mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+	while ((row = mysql_fetch_row(res))) {
+		maxid = atoi(row[0]);
+		for (i=0; i < mysql_num_fields(res); i++){
+			id = atoi(row[i]);
+			if (id > maxid)
+				maxid = id;
+		}
+	}
+	id = 0;
+	mysql_free_result(res);
+
+
+	clrstr(query);
+	sprintf(query, "select postRead from %sStreamUsers where authorName='%s'", stream, user);
+	if (mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+
+	while ((row = mysql_fetch_row(res))) {
+		id = atoi(row[0]);
+		if (id == 0)
+			id = 1;
+	}
+	mysql_free_result(res);
+
+	if (id > maxid)
+		id = maxid;
+
+
+	clrstr(query);
+	sprintf(query, "select authorName,date,text from %sStream where id=%d", stream, id);
+	if(mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+
+	while ((row = mysql_fetch_row(res))) {
+		for (i=0; i < mysql_num_fields(res); i++){
+			printf("%s\n", row[i]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	mysql_free_result(res);
+
+
+	clrstr(query);
+	sprintf(query, "update %sStreamUsers set postRead=%d where authorName='%s'", stream, id+1, user);
+	if (mysql_query(&mysql, query)) {
+		error("select failed!",&mysql);
+	}
+
+	mysql_close(&mysql);
+	mysql_library_end();
+
+	return id;
+}
+
+void markAllRead(char *stream, char *user) {
+	MYSQL mysql;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+	int i, id, maxid;
+	char query[MAX_QUERY];
+	
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host. %s", mysql_error(&mysql));
+	}			
+
+	sprintf(query, "select id from %sStream", stream);
+	if (mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+	while ((row = mysql_fetch_row(res))) {
+		maxid = atoi(row[0]);
+		for (i=0; i < mysql_num_fields(res); i++){
+			id = atoi(row[i]);
+			if (id > maxid)
+				maxid = id;
+		}
+	}
+	id = 0;
+	mysql_free_result(res);
+
+
+	clrstr(query);
+	sprintf(query, "update %sStreamUsers set postRead=%d where authorName='%s'", stream, maxid, user);
+	if (mysql_query(&mysql, query)) {
+		error("select failed!",&mysql);
+	}
+
+	mysql_close(&mysql);
+	mysql_library_end();
+}
+
+
+void previousPost(char *stream, char *user, int postRead) {
+	MYSQL mysql;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+	int i;
+	char query[MAX_QUERY];
+	
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host. %s", mysql_error(&mysql));
+	}			
+
+	sprintf(query, "select authorName,date,text from %sStream where id=%d", stream, postRead);
+	if(mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+
+	while ((row = mysql_fetch_row(res))) {
+		for (i=0; i < mysql_num_fields(res); i++){
+			printf("%s\n", row[i]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+
+	mysql_free_result(res);
+	mysql_close(&mysql);
+	mysql_library_end();
+}
+
+
+int nextPost(char *stream, char *user, int postRead) {
+	MYSQL mysql;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+	int i, id, maxid, oldPostRead;
+	char query[MAX_QUERY];
+	
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host. %s", mysql_error(&mysql));
+	}			
+
+	sprintf(query, "select id from %sStream", stream);
+	if (mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+	while ((row = mysql_fetch_row(res))) {
+		maxid = atoi(row[0]);
+		for (i=0; i < mysql_num_fields(res); i++){
+			id = atoi(row[i]);
+			if (id > maxid)
+				maxid = id;
+		}
+	}
+	id = 0;
+	mysql_free_result(res);
+
+
+	if (postRead > maxid)
+		postRead--;
+
+	clrstr(query);
+	sprintf(query, "select authorName,date,text from %sStream where id=%d", stream, postRead);
+	if(mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+
+	while ((row = mysql_fetch_row(res))) {
+		for (i=0; i < mysql_num_fields(res); i++){
+			printf("%s\n", row[i]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	mysql_free_result(res);
+
+
+	clrstr(query);
+	sprintf(query, "select postRead from %sStreamUsers where authorName='%s'", stream, user);
+	if (mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+	while ((row = mysql_fetch_row(res))) {
+		oldPostRead = atoi(row[0]);
+		if (oldPostRead == 0)
+			oldPostRead = 1;
+	}
+	mysql_free_result(res);
+
+
+	if (postRead > oldPostRead) {
+		clrstr(query);
+		sprintf(query, "update %sStreamUsers set postRead=%d where authorName='%s'", stream, postRead, user);
+		if (mysql_query(&mysql, query)) {
+			error("select failed!",&mysql);
+		}
+	}
+
+	mysql_close(&mysql);
+	mysql_library_end();
+
+	return postRead;
+}
+
+
+void sortByName(char *stream) {
+	MYSQL mysql;
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+
+	int i;
+	char query[MAX_QUERY];
+	
+	mysql_init(&mysql);
+	mysql_options(&mysql, MYSQL_READ_DEFAULT_GROUP, "mydb");
+	if (!mysql_real_connect(&mysql, HOSTNAME, USERNAME, PASSWORD,
+		DATABASE, 0, NULL, 0)) {
+	   printf("Could not connect to host. %s", mysql_error(&mysql));
+	}			
+
+	sprintf(query, "select authorName,date,text from %sStream order by authorName", stream);
+	if(mysql_query(&mysql, query)){
+		error("select failed!",&mysql);
+	}
+	if (!(res = mysql_store_result(&mysql))){
+		error("store failed!",&mysql);
+	}
+
+	while ((row = mysql_fetch_row(res))) {
+		for (i=0; i < mysql_num_fields(res); i++){
+			printf("%s\n", row[i]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+
+	mysql_free_result(res);
+	mysql_close(&mysql);
+	mysql_library_end();
+
 }
