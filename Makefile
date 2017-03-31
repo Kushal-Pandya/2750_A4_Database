@@ -49,14 +49,18 @@ applyPerm:
 	chmod 7777 a3
 
 
-A4: db.o
+A4: db.o sqlLib
 	$(CC) $(CFLAGS) db.o -o db $(SQL)
 
 db.o: db.c
 	$(CC) $(CFLAGS) -c db.c
 
+sqlLib:
+	$(CC) $(CFLAGS) -shared -Wl,-soname,sqllib -o sqllib.so -fPIC sqllib.c -lmysqlclient -L/usr/lib/x86_64-linux-gnu/
+
+
 run:
 	valgrind --leak-check=full --show-reachable=yes ./a3 
 
 clean: 
-	rm -f *.o a2 a1 assets.txt addauthor post libstream.a messages/* a3 format.txt db
+	rm -f *.o a2 a1 assets.txt addauthor post libstream.a messages/* a3 format.txt db sqllib.so

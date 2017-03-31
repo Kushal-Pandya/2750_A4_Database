@@ -180,7 +180,7 @@ void updateStream(struct userPost *st) {
 	}
 	
 	while ((row = mysql_fetch_row(res))) {
-		for (i=0; i < mysql_num_fields(res); i++){
+		for (i=0; i < mysql_num_fields(res); i++) {
 			if (row != NULL)
 				hasPermission = 1;
 		}

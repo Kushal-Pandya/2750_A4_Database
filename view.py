@@ -7,6 +7,7 @@ import glob
 import tty
 import sys
 import termios
+import ctypes
 
 global _postRead
 _postRead = 0
@@ -411,15 +412,16 @@ def getPostRead():
 if __name__ == "__main__":
 
 	name = getName()
-	selectStream(name)
 	stream = getStream()
 	mode = getMode()
+
+	testlib = ctypes.CDLL('./sqllib.so')
+	testlib.connect(name)
 
 	if stream == None:
 		sys.exit()
 
-	clearScreen()
-	keyPressed(stream, name, 0, mode)
+	# keyPressed(stream, name, 0, mode)
 
 
 
