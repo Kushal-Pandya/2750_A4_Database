@@ -37,53 +37,45 @@ def getMode():
 
 
 def keyPressed(stream, name, x, sqllib):
-	postRead = 0
+
+	try:
+		with open("postRead.txt", "r") as f:
+			postRead = int(f.read())
+	except:
+		postRead = 1
 
 	if x == '-':
-		print 'test'
-		f = open("postRead.txt", "r")
-		postRead = int(f.read(1))
-		f.close()
-
 		if postRead != 1:
 			postRead = postRead - 1
-			f = open("postRead.txt", "w")
-			f.write(str(postRead))
-			f.close()
+			with open("postRead.txt", "w") as f:
+				f.write(str(postRead))
 
 		sqllib.previousPost(stream, name, postRead)
 
+
 	elif x == 'a':
 		postRead = sqllib.printPost(stream, name)
+		with open("postRead.txt", "w") as f:
+				f.write(str(postRead))
 
-		f = open("postRead.txt", "w")
-		f.write(str(postRead))
-		f.close()
 
 	elif x == 'c':
 		postRead = sqllib.printPost(stream, name)
+		with open("postRead.txt", "w") as f:
+				f.write(str(postRead))
 
-		f = open("postRead.txt", "w")
-		f.write(str(postRead))
-		f.close()
 
 	elif x == '+':
-		f = open("postRead.txt", "r")
-		postRead = int(f.read(1))
-		f.close()
+		postRead2 = sqllib.nextPost(stream, name, postRead)
+		with open("postRead.txt", "w") as f:
+				f.write(str(postRead2))
 
-		postRead = sqllib.nextPost(stream, name, postRead)
-		
-		f = open("postRead.txt", "w")
-		f.write(str(postRead))
-		f.close()
 
 	elif x == 'o':
-		print 'test o??'
 		sqllib.sortByName(stream)
 
+
 	elif x == 'm':
-		print 'm'
 		sqllib.markAllRead(stream, name)
 
 

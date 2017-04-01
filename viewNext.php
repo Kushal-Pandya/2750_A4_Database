@@ -30,9 +30,9 @@ if ($key == "Sort_Stream_By_Name") {
 	echo "Sorted stream by author name! <br>";
 	$mode = "o";
 }
-else if ($key == "Page_Up")
+else if ($key == "Next_Post")
 	$mode = "+";
-else if ($key == "Page_Down")
+else if ($key == "Previous_Post")
 	$mode = "-";
 else if ($key == "Mark_All_Read") {
 	echo "Marked all posts as read! <br>";
@@ -47,7 +47,6 @@ $cmd2 = './view.py ' . $author . ' *' . $_SESSION['stream'] . ' @' . $mode;
 $output2 = shell_exec($cmd2);
 
 echo "<pre>" . $output2 . "</pre>";
-
 
 ?>
 

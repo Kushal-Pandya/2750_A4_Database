@@ -63,4 +63,4 @@ run:
 	valgrind --leak-check=full --show-reachable=yes ./a3 
 
 clean: 
-	rm -f *.o a2 a1 assets.txt addauthor post libstream.a messages/* a3 format.txt db sqllib.so
+	rm -f *.o a2 a1 assets.txt addauthor post libstream.a messages/* a3 format.txt db sqllib.so postRead.txt

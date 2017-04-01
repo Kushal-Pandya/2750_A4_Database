@@ -110,24 +110,18 @@ int printPost(char *stream, char *user) {
 	   printf("Could not connect to host. %s", mysql_error(&mysql));
 	}	
 
-	sprintf(query, "select id from %sStream", stream);
+	sprintf(query, "select id from %sStream order by id desc", stream);
 	if (mysql_query(&mysql, query)){
 		error("select failed!",&mysql);
 	}
 	if (!(res = mysql_store_result(&mysql))){
 		error("store failed!",&mysql);
 	}
-	while ((row = mysql_fetch_row(res))) {
-		maxid = atoi(row[0]);
-		for (i=0; i < mysql_num_fields(res); i++){
-			id = atoi(row[i]);
-			if (id > maxid)
-				maxid = id;
-		}
-	}
+	row = mysql_fetch_row(res);
+	maxid = atoi(row[0]);
+
 	id = 0;
 	mysql_free_result(res);
-
 
 	clrstr(query);
 	sprintf(query, "select postRead from %sStreamUsers where authorName='%s'", stream, user);
@@ -177,7 +171,7 @@ int printPost(char *stream, char *user) {
 	mysql_close(&mysql);
 	mysql_library_end();
 
-	return id;
+	return id+1;
 }
 
 void markAllRead(char *stream, char *user) {
@@ -185,7 +179,7 @@ void markAllRead(char *stream, char *user) {
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 
-	int i, id, maxid;
+	int maxid;
 	char query[MAX_QUERY];
 	
 	mysql_init(&mysql);
@@ -195,24 +189,17 @@ void markAllRead(char *stream, char *user) {
 	   printf("Could not connect to host. %s", mysql_error(&mysql));
 	}			
 
-	sprintf(query, "select id from %sStream", stream);
+	sprintf(query, "select id from %sStream order by id desc", stream);
 	if (mysql_query(&mysql, query)){
 		error("select failed!",&mysql);
 	}
 	if (!(res = mysql_store_result(&mysql))){
 		error("store failed!",&mysql);
 	}
-	while ((row = mysql_fetch_row(res))) {
-		maxid = atoi(row[0]);
-		for (i=0; i < mysql_num_fields(res); i++){
-			id = atoi(row[i]);
-			if (id > maxid)
-				maxid = id;
-		}
-	}
-	id = 0;
-	mysql_free_result(res);
+	row = mysql_fetch_row(res);
+	maxid = atoi(row[0]);
 
+	mysql_free_result(res);
 
 	clrstr(query);
 	sprintf(query, "update %sStreamUsers set postRead=%d where authorName='%s'", stream, maxid, user);
@@ -267,7 +254,7 @@ int nextPost(char *stream, char *user, int postRead) {
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 
-	int i, id, maxid, oldPostRead;
+	int i, maxid, oldPostRead;
 	char query[MAX_QUERY];
 	
 	mysql_init(&mysql);
@@ -277,22 +264,16 @@ int nextPost(char *stream, char *user, int postRead) {
 	   printf("Could not connect to host. %s", mysql_error(&mysql));
 	}			
 
-	sprintf(query, "select id from %sStream", stream);
+	sprintf(query, "select id from %sStream order by id desc", stream);
 	if (mysql_query(&mysql, query)){
 		error("select failed!",&mysql);
 	}
 	if (!(res = mysql_store_result(&mysql))){
 		error("store failed!",&mysql);
 	}
-	while ((row = mysql_fetch_row(res))) {
-		maxid = atoi(row[0]);
-		for (i=0; i < mysql_num_fields(res); i++){
-			id = atoi(row[i]);
-			if (id > maxid)
-				maxid = id;
-		}
-	}
-	id = 0;
+	row = mysql_fetch_row(res);
+	maxid = atoi(row[0]);
+
 	mysql_free_result(res);
 
 
@@ -334,6 +315,7 @@ int nextPost(char *stream, char *user, int postRead) {
 	mysql_free_result(res);
 
 
+	postRead++;
 	if (postRead > oldPostRead) {
 		clrstr(query);
 		sprintf(query, "update %sStreamUsers set postRead=%d where authorName='%s'", stream, postRead, user);

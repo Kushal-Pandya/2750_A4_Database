@@ -43,9 +43,7 @@ void performAdd(char *token, char *name) {
 	strcat(query, "postRead int,");
 	strcat(query, "primary key(authorName) )");
 	
-	if(mysql_query(&mysql, query)) {
-	  error("Could not create table!",&mysql);
-	}
+	mysql_query(&mysql, query);
 	clrstr(query);
 
 	char records[100];
@@ -201,9 +199,7 @@ void updateStream(struct userPost *st) {
 		sprintf(temp, "foreign key(authorName) references %s(authorName) )", streamUsersFilename);
 		strcat(query, temp);
 
-		if(mysql_query(&mysql, query)) {
-		  error("Could not create table!",&mysql);
-		}
+		mysql_query(&mysql, query);
 		clrstr(query);
 		clrstr(temp);
 
