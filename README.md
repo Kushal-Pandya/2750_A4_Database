@@ -1,8 +1,7 @@
-CIS 2750
-A4
-Author: Kushal Pandya
-Due Date: March 24 2017 
-
+A4 for CIS 2750
+================
+- Part 4 of Blog Project
+- Added database to store post and author information instead of using text files
 
 LIMITATIONS
 -----------------------
